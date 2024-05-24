@@ -1,7 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 class HomePage extends StatefulWidget {
@@ -23,13 +21,25 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class TextToSpeech extends StatelessWidget {
+class TextToSpeech extends StatefulWidget {
+  @override
+  _TextToSpeechState createState() => _TextToSpeechState();
+}
+
+class _TextToSpeechState extends State<TextToSpeech> {
   final FlutterTts flutterTts = FlutterTts();
   final TextEditingController textEditingController = TextEditingController();
-  speak(String text) async {
+
+  Future<void> speak(String text) async {
     await flutterTts.setLanguage("en-US");
     await flutterTts.setPitch(1); //0.5-1.5
     await flutterTts.speak(text);
+  }
+
+  @override
+  void dispose() {
+    textEditingController.dispose();
+    super.dispose();
   }
 
   @override
@@ -43,7 +53,11 @@ class TextToSpeech extends StatelessWidget {
           children: <Widget>[
             TextFormField(
               controller: textEditingController,
+              decoration: InputDecoration(
+                labelText: "Enter text",
+              ),
             ),
+            SizedBox(height: 20),
             ElevatedButton(
               child: Text("SESLİ OKU"),
               onPressed: () => speak(textEditingController.text),
