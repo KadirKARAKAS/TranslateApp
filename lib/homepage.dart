@@ -74,7 +74,7 @@ class _TextToSpeechWithWaveformState extends State<TextToSpeechWithWaveform> {
           alignment: Alignment.center,
           children: <Widget>[
             if (isSpeaking)
-              const Positioned(
+              Positioned(
                 top: 0,
                 child: SoundWaveformWidget(
                   count: 10,
@@ -84,7 +84,7 @@ class _TextToSpeechWithWaveformState extends State<TextToSpeechWithWaveform> {
                 ),
               )
             else
-              const Positioned(
+              Positioned(
                 top: 0,
                 child: SoundWaveformWidget(
                   count: 10,
@@ -146,7 +146,7 @@ class _SoundWaveformWidgetState extends State<SoundWaveformWidget>
     super.initState();
     controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: widget.isAnimating ? 800 : 0),
+      duration: const Duration(milliseconds: 800),
     );
 
     if (widget.isAnimating) {
@@ -178,6 +178,22 @@ class _SoundWaveformWidgetState extends State<SoundWaveformWidget>
   }
 
   @override
+  void didUpdateWidget(SoundWaveformWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isAnimating != oldWidget.isAnimating) {
+      if (widget.isAnimating) {
+        controller.repeat();
+        _randomizeHeights();
+      } else {
+        controller.stop();
+        setState(() {
+          heights = List<double>.filled(widget.count, widget.minHeight);
+        });
+      }
+    }
+  }
+
+  @override
   void dispose() {
     controller.dispose();
     super.dispose();
@@ -185,46 +201,28 @@ class _SoundWaveformWidgetState extends State<SoundWaveformWidget>
 
   @override
   Widget build(BuildContext context) {
-    return widget.isAnimating
-        ? AnimatedBuilder(
-            animation: controller,
-            builder: (context, child) {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(
-                  widget.count,
-                  (i) => AnimatedContainer(
-                    duration: Duration(milliseconds: 800 ~/ widget.count),
-                    margin: i == (widget.count - 1)
-                        ? EdgeInsets.zero
-                        : const EdgeInsets.only(right: 5),
-                    height: heights[i],
-                    width: 20,
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(9999),
-                    ),
-                  ),
-                ),
-              );
-            },
-          )
-        : Row(
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(
-              widget.count,
-              (i) => Container(
-                margin: i == (widget.count - 1)
-                    ? EdgeInsets.zero
-                    : const EdgeInsets.only(right: 5),
-                height: widget.minHeight,
-                width: 20,
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(9999),
-                ),
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, child) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(
+            widget.count,
+            (i) => AnimatedContainer(
+              duration: Duration(milliseconds: 800 ~/ widget.count),
+              margin: i == (widget.count - 1)
+                  ? EdgeInsets.zero
+                  : const EdgeInsets.only(right: 5),
+              height: heights[i],
+              width: 20,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(9999),
               ),
             ),
-          );
+          ),
+        );
+      },
+    );
   }
 }
